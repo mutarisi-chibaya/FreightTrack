@@ -483,3 +483,7 @@ $RECYCLE.BIN/
 
 # Personal files (CV etc.): keep out of the public repo
 cv/
+
+# Demo video working files
+tools/demo-video/work/
+*.mp4
