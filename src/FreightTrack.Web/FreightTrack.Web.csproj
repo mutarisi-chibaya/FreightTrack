@@ -6,4 +6,23 @@
     <ImplicitUsings>enable</ImplicitUsings>
   </PropertyGroup>
 
+  <ItemGroup>
+    <PackageReference Include="Microsoft.EntityFrameworkCore.Design" Version="10.0.14">
+      <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
+      <PrivateAssets>all</PrivateAssets>
+    </PackageReference>
+    <PackageReference Include="Microsoft.EntityFrameworkCore.SqlServer" Version="10.0.14" />
+    <!-- Pinned explicitly: the SQL Server driver pulls in an older version with known vulnerabilities
+         (NuGet warnings NU1902/NU1903). Referencing the patched version directly overrides it. -->
+    <PackageReference Include="System.Security.Cryptography.Pkcs" Version="10.0.14" />
+  </ItemGroup>
+
+  <!-- The hand-written T-SQL in /database is embedded into the assembly so an EF migration can run it.
+       That way `dotnet ef database update` creates the view and stored procedure too, and the .sql
+       files stay the single source of truth (no copy-pasted SQL inside C# strings). -->
+  <ItemGroup>
+    <EmbeddedResource Include="..\..\database\create_views.sql" LogicalName="FreightTrack.Sql.create_views.sql" />
+    <EmbeddedResource Include="..\..\database\stored_procedures.sql" LogicalName="FreightTrack.Sql.stored_procedures.sql" />
+  </ItemGroup>
+
 </Project>

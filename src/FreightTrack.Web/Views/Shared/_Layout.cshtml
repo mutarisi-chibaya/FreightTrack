@@ -1,9 +1,9 @@
-﻿<!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>@ViewData["Title"] - FreightTrack.Web</title>
+    <title>@ViewData["Title"] - FreightTrack</title>
     <script type="importmap"></script>
     <link rel="stylesheet" href="~/lib/bootstrap/dist/css/bootstrap.min.css" />
     <link rel="stylesheet" href="~/css/site.css" asp-append-version="true" />
@@ -11,35 +11,53 @@
 </head>
 <body>
     <header>
-        <nav class="navbar navbar-expand-sm navbar-toggleable-sm navbar-light bg-white border-bottom box-shadow mb-3">
-            <div class="container-fluid">
-                <a class="navbar-brand" asp-area="" asp-controller="Home" asp-action="Index">FreightTrack.Web</a>
-                <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target=".navbar-collapse" aria-controls="navbarSupportedContent"
-                        aria-expanded="false" aria-label="Toggle navigation">
+        <nav class="navbar navbar-expand-md navbar-dark bg-dark mb-4">
+            <div class="container">
+                <a class="navbar-brand fw-semibold" asp-controller="Home" asp-action="Index">FreightTrack</a>
+                <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#mainNav"
+                        aria-controls="mainNav" aria-expanded="false" aria-label="Toggle navigation">
                     <span class="navbar-toggler-icon"></span>
                 </button>
-                <div class="navbar-collapse collapse d-sm-inline-flex justify-content-between">
-                    <ul class="navbar-nav flex-grow-1">
-                        <li class="nav-item">
-                            <a class="nav-link text-dark" asp-area="" asp-controller="Home" asp-action="Index">Home</a>
-                        </li>
-                        <li class="nav-item">
-                            <a class="nav-link text-dark" asp-area="" asp-controller="Home" asp-action="Privacy">Privacy</a>
-                        </li>
+                <div class="collapse navbar-collapse" id="mainNav">
+                    <ul class="navbar-nav me-auto">
+                        <li class="nav-item"><a class="nav-link" asp-controller="Home" asp-action="Index">Dashboard</a></li>
+                        <li class="nav-item"><a class="nav-link" asp-controller="Shipments" asp-action="Index">Shipments</a></li>
+                        <li class="nav-item"><a class="nav-link" asp-controller="Customers" asp-action="Index">Customers</a></li>
                     </ul>
+                    @* Tracking lookup: a plain GET form, so the URL is shareable: /Shipments/Track?trackingNumber=... *@
+                    <form class="d-flex" role="search" asp-controller="Shipments" asp-action="Track" method="get">
+                        <input class="form-control form-control-sm me-2" type="search" name="trackingNumber"
+                               placeholder="FT-2026-000123" aria-label="Tracking number" required />
+                        <button class="btn btn-sm btn-outline-light text-nowrap" type="submit">Track</button>
+                    </form>
                 </div>
             </div>
         </nav>
     </header>
     <div class="container">
         <main role="main" class="pb-3">
+            @* TempData survives exactly one redirect, which suits "saved!" messages after Post/Redirect/Get. *@
+            @if (TempData["Message"] is string message)
+            {
+                <div class="alert alert-success alert-dismissible fade show" role="alert">
+                    @message
+                    <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                </div>
+            }
+            @if (TempData["Error"] is string error)
+            {
+                <div class="alert alert-warning alert-dismissible fade show" role="alert">
+                    @error
+                    <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                </div>
+            }
             @RenderBody()
         </main>
     </div>
 
     <footer class="border-top footer text-muted">
         <div class="container">
-            &copy; 2026 - FreightTrack.Web - <a asp-area="" asp-controller="Home" asp-action="Privacy">Privacy</a>
+            &copy; 2026 FreightTrack · Internal operations tool
         </div>
     </footer>
     <script src="~/lib/jquery/dist/jquery.min.js"></script>

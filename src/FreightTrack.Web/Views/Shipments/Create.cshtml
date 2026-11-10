@@ -1,0 +1,21 @@
+@model ShipmentFormViewModel
+@{
+    ViewData["Title"] = "New shipment";
+}
+
+<h1 class="h3 mb-1">New shipment</h1>
+<p class="text-muted">A tracking number is generated automatically when you save.</p>
+
+<div class="card"><div class="card-body">
+    <form asp-action="Create" method="post">
+        <partial name="_ShipmentForm" model="Model" />
+        <div class="mt-4">
+            <button type="submit" class="btn btn-primary">Book shipment</button>
+            <a asp-action="Index" class="btn btn-link">Cancel</a>
+        </div>
+    </form>
+</div></div>
+
+@section Scripts {
+    <partial name="_ValidationScriptsPartial" />
+}

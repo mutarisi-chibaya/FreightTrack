@@ -1,0 +1,59 @@
+@model ShipmentFormViewModel
+
+<div asp-validation-summary="ModelOnly" class="alert alert-danger"></div>
+<input type="hidden" asp-for="Id" />
+
+<div class="row g-3">
+    @if (Model.TrackingNumber is not null)
+    {
+        <div class="col-12">
+            <label class="form-label">Tracking number</label>
+            @* Read-only text, not an input: the tracking number is never posted, so it can't be changed. *@
+            <div class="form-control-plaintext tracking-number fw-semibold">@Model.TrackingNumber</div>
+        </div>
+    }
+    <div class="col-md-6">
+        <label asp-for="CustomerId" class="form-label"></label>
+        <select asp-for="CustomerId" asp-items="Model.Customers" class="form-select">
+            <option value="">Choose a customer…</option>
+        </select>
+        <span asp-validation-for="CustomerId" class="text-danger small"></span>
+    </div>
+    <div class="col-md-6">
+        <label asp-for="Mode" class="form-label"></label>
+        <select asp-for="Mode" asp-items="Html.GetEnumSelectList<ShipmentMode>()" class="form-select">
+            <option value="">Choose a mode…</option>
+        </select>
+        <span asp-validation-for="Mode" class="text-danger small"></span>
+    </div>
+    <div class="col-md-6">
+        <label asp-for="Origin" class="form-label"></label>
+        <input asp-for="Origin" class="form-control" placeholder="e.g. Durban, South Africa" />
+        <span asp-validation-for="Origin" class="text-danger small"></span>
+    </div>
+    <div class="col-md-6">
+        <label asp-for="Destination" class="form-label"></label>
+        <input asp-for="Destination" class="form-control" placeholder="e.g. Gaborone, Botswana" />
+        <span asp-validation-for="Destination" class="text-danger small"></span>
+    </div>
+    <div class="col-md-6">
+        <label asp-for="WeightKg" class="form-label"></label>
+        <input asp-for="WeightKg" class="form-control" step="0.01" min="0.01" />
+        <span asp-validation-for="WeightKg" class="text-danger small"></span>
+    </div>
+    <div class="col-md-6">
+        <label asp-for="DeclaredValue" class="form-label"></label>
+        <input asp-for="DeclaredValue" class="form-control" step="0.01" min="0" />
+        <span asp-validation-for="DeclaredValue" class="text-danger small"></span>
+    </div>
+    <div class="col-md-6">
+        <label asp-for="BookedDate" class="form-label"></label>
+        <input asp-for="BookedDate" class="form-control" />
+        <span asp-validation-for="BookedDate" class="text-danger small"></span>
+    </div>
+    <div class="col-md-6">
+        <label asp-for="ExpectedDeliveryDate" class="form-label"></label>
+        <input asp-for="ExpectedDeliveryDate" class="form-control" />
+        <span asp-validation-for="ExpectedDeliveryDate" class="text-danger small"></span>
+    </div>
+</div>

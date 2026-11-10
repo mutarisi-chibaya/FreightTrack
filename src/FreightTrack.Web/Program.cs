@@ -1,3 +1,7 @@
+using FreightTrack.Web.Data;
+using FreightTrack.Web.Services;
+using Microsoft.EntityFrameworkCore;
+
 // Program.cs is the entry point of the app (like `public static void main` in Java).
 // C# "top-level statements" let us skip writing the Program class and Main method by hand.
 
@@ -9,10 +13,32 @@ var builder = WebApplication.CreateBuilder(args);
 // 2) REGISTER SERVICES IN THE DI CONTAINER
 // Anything registered here can be "asked for" in a constructor, and ASP.NET Core supplies it.
 // AddControllersWithViews() registers everything MVC needs: controllers, Razor views, model binding, validation.
-// In later milestones we'll register AppDbContext and our CustomerService / ShipmentService here too.
 builder.Services.AddControllersWithViews();
 
+// EF Core DbContext, using the connection string from appsettings.json. Registered as "scoped":
+// one instance per HTTP request, so each request gets its own unit of work.
+builder.Services.AddDbContext<AppDbContext>(options =>
+    options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection")));
+
+// Our services. Scoped, like the DbContext they depend on.
+// Controllers ask for the interface; DI decides which class to give them.
+builder.Services.AddScoped<ICustomerService, CustomerService>();
+builder.Services.AddScoped<IShipmentService, ShipmentService>();
+
+// The system clock, injectable so tests can swap in a fixed date. Singleton = one shared instance.
+builder.Services.AddSingleton(TimeProvider.System);
+
 var app = builder.Build();
+
+// In development: apply any pending EF migrations and seed demo data on startup, so a fresh clone
+// "just works". (In production you'd run `dotnet ef database update` as a deliberate deploy step.)
+if (app.Environment.IsDevelopment())
+{
+    using var scope = app.Services.CreateScope();
+    var db = scope.ServiceProvider.GetRequiredService<AppDbContext>();
+    db.Database.Migrate();
+    SeedData.Initialize(db, TimeProvider.System);
+}
 
 // 3) CONFIGURE THE MIDDLEWARE PIPELINE
 // Every HTTP request passes through these components in order (like a chain of Java Servlet Filters).

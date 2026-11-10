@@ -1,19 +1,19 @@
 using System.Diagnostics;
-using Microsoft.AspNetCore.Mvc;
 using FreightTrack.Web.Models;
+using FreightTrack.Web.Services;
+using Microsoft.AspNetCore.Mvc;
 
 namespace FreightTrack.Web.Controllers;
 
-public class HomeController : Controller
+// Constructor injection: ASP.NET Core sees the IShipmentService parameter, looks it up in the
+// DI container (registered in Program.cs) and passes in a ShipmentService automatically.
+public class HomeController(IShipmentService shipments) : Controller
 {
-    public IActionResult Index()
+    // GET /  → the managers' dashboard
+    public async Task<IActionResult> Index()
     {
-        return View();
-    }
-
-    public IActionResult Privacy()
-    {
-        return View();
+        var model = await shipments.GetDashboardAsync();
+        return View(model);
     }
 
     [ResponseCache(Duration = 0, Location = ResponseCacheLocation.None, NoStore = true)]

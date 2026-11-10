@@ -1,0 +1,101 @@
+@model CustomerDetailsViewModel
+@{
+    var c = Model.Customer;
+    ViewData["Title"] = c.CompanyName;
+    var total = Model.Summary.FirstOrDefault(r => r.Status is null);
+}
+
+<div class="d-flex justify-content-between align-items-start mb-3">
+    <div>
+        <a asp-action="Index" class="small">&larr; Customers</a>
+        <h1 class="h3 mb-0">@c.CompanyName</h1>
+        <div class="text-muted">@c.City, @c.Country · customer since @c.CreatedAt.ToString("MMM yyyy")</div>
+    </div>
+    <div class="text-nowrap">
+        <a asp-controller="Shipments" asp-action="Create" asp-route-customerId="@c.Id" class="btn btn-primary">+ New shipment</a>
+        <a asp-action="Edit" asp-route-id="@c.Id" class="btn btn-outline-secondary">Edit</a>
+    </div>
+</div>
+
+<div class="row g-4 mb-4">
+    <div class="col-md-5">
+        <div class="card h-100">
+            <div class="card-header fw-semibold">Contact</div>
+            <div class="card-body">
+                <dl class="row mb-0">
+                    <dt class="col-4">Name</dt><dd class="col-8">@c.ContactName</dd>
+                    <dt class="col-4">Email</dt><dd class="col-8"><a href="mailto:@c.Email">@c.Email</a></dd>
+                    <dt class="col-4">Phone</dt><dd class="col-8">@(c.Phone ?? "—")</dd>
+                </dl>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-7">
+        <div class="card h-100">
+            <div class="card-header fw-semibold d-flex justify-content-between">
+                <span>Shipment summary</span>
+                <span class="text-muted small fw-normal">from stored procedure <code>usp_GetCustomerShipmentSummary</code></span>
+            </div>
+            <table class="table table-sm mb-0">
+                <thead class="table-light">
+                    <tr><th>Status</th><th class="text-end">Shipments</th><th class="text-end">Total weight (kg)</th></tr>
+                </thead>
+                <tbody>
+                    @foreach (var row in Model.Summary.Where(r => r.Status is not null))
+                    {
+                        <tr>
+                            <td>
+                                @if (Enum.TryParse<ShipmentStatus>(row.Status, out var status))
+                                {
+                                    <partial name="_StatusBadge" model="status" />
+                                }
+                                else { @row.Status }
+                            </td>
+                            <td class="text-end">@row.ShipmentCount</td>
+                            <td class="text-end">@row.TotalWeightKg.ToString("N0")</td>
+                        </tr>
+                    }
+                    @if (total is not null)
+                    {
+                        <tr class="fw-semibold table-light">
+                            <td>Total</td>
+                            <td class="text-end">@total.ShipmentCount</td>
+                            <td class="text-end">@total.TotalWeightKg.ToString("N0")</td>
+                        </tr>
+                    }
+                    else
+                    {
+                        <tr><td colspan="3" class="text-muted">No shipments yet.</td></tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+
+<div class="card">
+    <div class="card-header fw-semibold">Shipments (@c.Shipments.Count)</div>
+    <div class="table-responsive">
+        <table class="table table-hover align-middle mb-0">
+            <thead class="table-light">
+                <tr><th>Tracking #</th><th>Route</th><th>Mode</th><th>Status</th><th>Booked</th><th>Expected</th></tr>
+            </thead>
+            <tbody>
+                @foreach (var s in c.Shipments)
+                {
+                    <tr>
+                        <td><a class="tracking-number" asp-controller="Shipments" asp-action="Details" asp-route-id="@s.Id">@s.TrackingNumber</a></td>
+                        <td>@s.Origin &rarr; @s.Destination</td>
+                        <td>@s.Mode</td>
+                        <td>
+                            <partial name="_StatusBadge" model="s.CurrentStatus" />
+                            @if (s.IsLate(Model.Today)) { <span class="badge text-bg-danger">Late</span> }
+                        </td>
+                        <td>@s.BookedDate.ToString("yyyy-MM-dd")</td>
+                        <td>@s.ExpectedDeliveryDate.ToString("yyyy-MM-dd")</td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+    </div>
+</div>

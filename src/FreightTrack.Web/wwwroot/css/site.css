@@ -29,3 +29,21 @@ body {
 .form-floating > .form-control-plaintext:focus::placeholder, .form-floating > .form-control:focus::placeholder {
   text-align: start;
 }
+
+/* ---------- FreightTrack ---------- */
+body { background-color: #f6f7f9; }
+
+.stat-card .stat-value { font-size: 2rem; font-weight: 600; line-height: 1.1; }
+.stat-card .stat-label { color: var(--bs-secondary-color); font-size: .85rem; text-transform: uppercase; letter-spacing: .04em; }
+
+.status-tile { text-decoration: none; color: inherit; }
+.status-tile:hover { background-color: var(--bs-light); }
+
+.tracking-number { font-family: var(--bs-font-monospace); white-space: nowrap; }
+
+/* Status history timeline: a vertical line with a dot per update */
+.timeline { list-style: none; padding-left: 0; margin: 0; position: relative; }
+.timeline::before { content: ""; position: absolute; left: 7px; top: 6px; bottom: 6px; width: 2px; background: var(--bs-border-color); }
+.timeline li { position: relative; padding-left: 2rem; padding-bottom: 1.25rem; }
+.timeline li:last-child { padding-bottom: 0; }
+.timeline .dot { position: absolute; left: 0; top: 4px; width: 16px; height: 16px; border-radius: 50%; border: 3px solid #fff; box-shadow: 0 0 0 1px var(--bs-border-color); }

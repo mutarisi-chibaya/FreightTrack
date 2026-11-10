@@ -1,8 +1,97 @@
-﻿@{
-    ViewData["Title"] = "Home Page";
+﻿@model DashboardViewModel
+@{
+    ViewData["Title"] = "Dashboard";
 }
 
-<div class="text-center">
-    <h1 class="display-4">Welcome</h1>
-    <p>Learn about <a href="https://learn.microsoft.com/aspnet/core">building Web apps with ASP.NET Core</a>.</p>
+<div class="d-flex justify-content-between align-items-center mb-3">
+    <h1 class="h3 mb-0">Operations dashboard</h1>
+    <span class="text-muted">@Model.Today.ToString("dddd, d MMMM yyyy")</span>
+</div>
+
+<div class="row g-3 mb-4">
+    <div class="col-6 col-lg-3">
+        <div class="card stat-card h-100"><div class="card-body">
+            <div class="stat-label">Total shipments</div>
+            <div class="stat-value">@Model.TotalShipments</div>
+        </div></div>
+    </div>
+    <div class="col-6 col-lg-3">
+        <div class="card stat-card h-100"><div class="card-body">
+            <div class="stat-label">In progress</div>
+            <div class="stat-value">@Model.InProgressCount</div>
+        </div></div>
+    </div>
+    <div class="col-6 col-lg-3">
+        <a class="card stat-card h-100 text-decoration-none border-danger" asp-controller="Shipments" asp-action="Index" asp-route-lateOnly="true">
+            <div class="card-body">
+                <div class="stat-label">Late</div>
+                <div class="stat-value text-danger">@Model.LateCount</div>
+            </div>
+        </a>
+    </div>
+    <div class="col-6 col-lg-3">
+        <div class="card stat-card h-100"><div class="card-body">
+            <div class="stat-label">Delivered</div>
+            <div class="stat-value text-success">@Model.StatusCounts.First(c => c.Status == ShipmentStatus.Delivered).Count</div>
+        </div></div>
+    </div>
+</div>
+
+<div class="row g-4">
+    <div class="col-lg-4">
+        <div class="card h-100">
+            <div class="card-header fw-semibold">Shipments by status</div>
+            <div class="list-group list-group-flush">
+                @foreach (var (status, count) in Model.StatusCounts)
+                {
+                    <a class="list-group-item status-tile d-flex justify-content-between align-items-center"
+                       asp-controller="Shipments" asp-action="Index" asp-route-status="@status">
+                        <partial name="_StatusBadge" model="status" />
+                        <span class="fw-semibold">@count</span>
+                    </a>
+                }
+            </div>
+        </div>
+    </div>
+
+    <div class="col-lg-8">
+        <div class="card h-100">
+            <div class="card-header d-flex justify-content-between align-items-center">
+                <span class="fw-semibold">10 most overdue shipments</span>
+                <a asp-controller="Shipments" asp-action="Index" asp-route-lateOnly="true" class="small">View all late</a>
+            </div>
+            @if (Model.MostOverdue.Count == 0)
+            {
+                <div class="card-body text-muted">Nothing is late. 🎉</div>
+            }
+            else
+            {
+                <div class="table-responsive">
+                    <table class="table table-hover align-middle mb-0">
+                        <thead class="table-light">
+                            <tr>
+                                <th>Tracking #</th>
+                                <th>Customer</th>
+                                <th>Destination</th>
+                                <th>Status</th>
+                                <th class="text-end">Days late</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @foreach (var s in Model.MostOverdue)
+                            {
+                                <tr>
+                                    <td><a class="tracking-number" asp-controller="Shipments" asp-action="Details" asp-route-id="@s.Id">@s.TrackingNumber</a></td>
+                                    <td>@s.Customer.CompanyName</td>
+                                    <td>@s.Destination</td>
+                                    <td><partial name="_StatusBadge" model="s.CurrentStatus" /></td>
+                                    <td class="text-end fw-semibold text-danger">@s.DaysOverdue(Model.Today)</td>
+                                </tr>
+                            }
+                        </tbody>
+                    </table>
+                </div>
+            }
+        </div>
+    </div>
 </div>

@@ -1,0 +1,3 @@
+@* A partial view: a reusable snippet. Used as <partial name="_StatusBadge" model="shipment.CurrentStatus" /> *@
+@model ShipmentStatus
+<span class="badge @DisplayHelpers.BadgeClass(Model)">@Model.GetDisplayName()</span>

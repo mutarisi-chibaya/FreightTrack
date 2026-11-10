@@ -1,0 +1,39 @@
+@* Shared by Create and Edit. Tag helpers like asp-for generate the name/id/value attributes and the
+   validation data-* attributes from the [Required]/[EmailAddress] annotations on the view model. *@
+@model CustomerFormViewModel
+
+<div asp-validation-summary="ModelOnly" class="alert alert-danger"></div>
+<input type="hidden" asp-for="Id" />
+
+<div class="row g-3">
+    <div class="col-md-6">
+        <label asp-for="CompanyName" class="form-label"></label>
+        <input asp-for="CompanyName" class="form-control" />
+        <span asp-validation-for="CompanyName" class="text-danger small"></span>
+    </div>
+    <div class="col-md-6">
+        <label asp-for="ContactName" class="form-label"></label>
+        <input asp-for="ContactName" class="form-control" />
+        <span asp-validation-for="ContactName" class="text-danger small"></span>
+    </div>
+    <div class="col-md-6">
+        <label asp-for="Email" class="form-label"></label>
+        <input asp-for="Email" class="form-control" />
+        <span asp-validation-for="Email" class="text-danger small"></span>
+    </div>
+    <div class="col-md-6">
+        <label asp-for="Phone" class="form-label"></label>
+        <input asp-for="Phone" class="form-control" />
+        <span asp-validation-for="Phone" class="text-danger small"></span>
+    </div>
+    <div class="col-md-6">
+        <label asp-for="City" class="form-label"></label>
+        <input asp-for="City" class="form-control" />
+        <span asp-validation-for="City" class="text-danger small"></span>
+    </div>
+    <div class="col-md-6">
+        <label asp-for="Country" class="form-label"></label>
+        <input asp-for="Country" class="form-control" />
+        <span asp-validation-for="Country" class="text-danger small"></span>
+    </div>
+</div>

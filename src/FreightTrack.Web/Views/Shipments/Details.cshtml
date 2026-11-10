@@ -1,0 +1,115 @@
+@model ShipmentDetailsViewModel
+@{
+    var s = Model.Shipment;
+    ViewData["Title"] = s.TrackingNumber;
+    var late = s.IsLate(Model.Today);
+    var statusOptions = Model.AllowedNextStatuses
+        .Select(x => new SelectListItem(x.GetDisplayName(), x.ToString()));
+}
+
+<div class="d-flex flex-wrap justify-content-between align-items-start gap-2 mb-3">
+    <div>
+        <a asp-action="Index" class="small">&larr; Shipments</a>
+        <h1 class="h3 mb-1 tracking-number">@s.TrackingNumber</h1>
+        <div>
+            <partial name="_StatusBadge" model="s.CurrentStatus" />
+            @if (late) { <span class="badge text-bg-danger">Late by @s.DaysOverdue(Model.Today) days</span> }
+        </div>
+    </div>
+    <a asp-action="Edit" asp-route-id="@s.Id" class="btn btn-outline-secondary">Edit details</a>
+</div>
+
+<div class="row g-4">
+    <div class="col-lg-5">
+        <div class="card mb-4">
+            <div class="card-header fw-semibold">Shipment</div>
+            <div class="card-body">
+                <dl class="row mb-0">
+                    <dt class="col-5">Customer</dt>
+                    <dd class="col-7"><a asp-controller="Customers" asp-action="Details" asp-route-id="@s.CustomerId">@s.Customer.CompanyName</a></dd>
+                    <dt class="col-5">Origin</dt><dd class="col-7">@s.Origin</dd>
+                    <dt class="col-5">Destination</dt><dd class="col-7">@s.Destination</dd>
+                    <dt class="col-5">Mode</dt><dd class="col-7">@s.Mode</dd>
+                    <dt class="col-5">Weight</dt><dd class="col-7">@s.WeightKg.ToString("N2") kg</dd>
+                    <dt class="col-5">Declared value</dt><dd class="col-7">R @s.DeclaredValue.ToString("N2")</dd>
+                    <dt class="col-5">Booked</dt><dd class="col-7">@s.BookedDate.ToString("d MMM yyyy")</dd>
+                    <dt class="col-5">Expected delivery</dt>
+                    <dd class="col-7 @(late ? "text-danger fw-semibold" : "")">@s.ExpectedDeliveryDate.ToString("d MMM yyyy")</dd>
+                    <dt class="col-5">Delivered</dt><dd class="col-7">@(s.DeliveredDate?.ToString("d MMM yyyy") ?? "—")</dd>
+                </dl>
+            </div>
+        </div>
+
+        <div class="card">
+            <div class="card-header fw-semibold">Add status update</div>
+            <div class="card-body">
+                @if (Model.AllowedNextStatuses.Count == 0)
+                {
+                    <p class="text-muted mb-0">This shipment has been delivered. Its history is closed.</p>
+                }
+                else
+                {
+                    <form asp-action="AddStatusUpdate" asp-route-id="@s.Id" method="post">
+                        <div asp-validation-summary="ModelOnly" class="alert alert-danger"></div>
+                        <div class="mb-3">
+                            <label asp-for="NewUpdate.Status" class="form-label"></label>
+                            @* Only statuses the rules allow are offered; the service re-checks on submit anyway. *@
+                            <select asp-for="NewUpdate.Status" asp-items="statusOptions" class="form-select">
+                                <option value="">Choose…</option>
+                            </select>
+                            <span asp-validation-for="NewUpdate.Status" class="text-danger small"></span>
+                        </div>
+                        <div class="mb-3">
+                            <label asp-for="NewUpdate.Location" class="form-label"></label>
+                            <input asp-for="NewUpdate.Location" class="form-control" placeholder="e.g. Beitbridge Border Post" />
+                            <span asp-validation-for="NewUpdate.Location" class="text-danger small"></span>
+                        </div>
+                        <div class="mb-3">
+                            <label asp-for="NewUpdate.Notes" class="form-label">Notes <span class="text-muted small">(required for Exception)</span></label>
+                            <textarea asp-for="NewUpdate.Notes" class="form-control" rows="2"></textarea>
+                            <span asp-validation-for="NewUpdate.Notes" class="text-danger small"></span>
+                        </div>
+                        <div class="mb-3">
+                            <label asp-for="NewUpdate.UpdatedBy" class="form-label"></label>
+                            <input asp-for="NewUpdate.UpdatedBy" class="form-control" placeholder="Your name" />
+                            <span asp-validation-for="NewUpdate.UpdatedBy" class="text-danger small"></span>
+                        </div>
+                        <button type="submit" class="btn btn-primary">Add update</button>
+                    </form>
+                }
+            </div>
+        </div>
+    </div>
+
+    <div class="col-lg-7">
+        <div class="card">
+            <div class="card-header fw-semibold">History</div>
+            <div class="card-body">
+                <ul class="timeline">
+                    @foreach (var u in s.StatusUpdates)
+                    {
+                        <li>
+                            <span class="dot @DisplayHelpers.BadgeClass(u.Status)"></span>
+                            <div class="d-flex flex-wrap justify-content-between gap-2">
+                                <div>
+                                    <partial name="_StatusBadge" model="u.Status" />
+                                    <span class="fw-semibold ms-1">@u.Location</span>
+                                </div>
+                                <small class="text-muted">@u.UpdatedAt.ToString("d MMM yyyy, HH:mm")</small>
+                            </div>
+                            @if (!string.IsNullOrWhiteSpace(u.Notes))
+                            {
+                                <div class="mt-1">@u.Notes</div>
+                            }
+                            <small class="text-muted">by @u.UpdatedBy</small>
+                        </li>
+                    }
+                </ul>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <partial name="_ValidationScriptsPartial" />
+}
