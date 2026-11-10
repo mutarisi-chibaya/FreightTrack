@@ -1,6 +1,8 @@
 ﻿@model DashboardViewModel
 @{
     ViewData["Title"] = "Dashboard";
+    ViewData["TourNav"] = true;        // this page's tour also explains the navbar
+    ViewData["TourAutostart"] = true;  // and starts automatically on someone's first visit
 }
 
 <div class="d-flex justify-content-between align-items-center mb-3">
@@ -8,7 +10,8 @@
     <span class="text-muted">@Model.Today.ToString("dddd, d MMMM yyyy")</span>
 </div>
 
-<div class="row g-3 mb-4">
+<div class="row g-3 mb-4" data-tour-step="3" data-tour-title="Today at a glance"
+     data-tour="Live totals across all shipments. In progress means anything not yet delivered.">
     <div class="col-6 col-lg-3">
         <div class="card stat-card h-100"><div class="card-body">
             <div class="stat-label">Total shipments</div>
@@ -22,7 +25,8 @@
         </div></div>
     </div>
     <div class="col-6 col-lg-3">
-        <a class="card stat-card h-100 text-decoration-none border-danger" asp-controller="Shipments" asp-action="Index" asp-route-lateOnly="true">
+        <a class="card stat-card h-100 text-decoration-none border-danger" data-tour-step="4" data-tour-title="Late shipments"
+           data-tour="A shipment is late when it isn't delivered and today is past its expected delivery date. Click to see them all." asp-controller="Shipments" asp-action="Index" asp-route-lateOnly="true">
             <div class="card-body">
                 <div class="stat-label">Late</div>
                 <div class="stat-value text-danger">@Model.LateCount</div>
@@ -39,7 +43,8 @@
 
 <div class="row g-4">
     <div class="col-lg-4">
-        <div class="card h-100">
+        <div class="card h-100" data-tour-step="5" data-tour-title="Where everything is"
+             data-tour="How many shipments are at each stage. Click a status to open the shipment list filtered to it.">
             <div class="card-header fw-semibold">Shipments by status</div>
             <div class="list-group list-group-flush">
                 @foreach (var (status, count) in Model.StatusCounts)
@@ -55,7 +60,8 @@
     </div>
 
     <div class="col-lg-8">
-        <div class="card h-100">
+        <div class="card h-100" data-tour-step="6" data-tour-title="Start your day here"
+             data-tour="The ten most overdue shipments, worst first. Click a tracking number to see its journey and record an update.">
             <div class="card-header d-flex justify-content-between align-items-center">
                 <span class="fw-semibold">10 most overdue shipments</span>
                 <a asp-controller="Shipments" asp-action="Index" asp-route-lateOnly="true" class="small">View all late</a>

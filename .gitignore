@@ -480,3 +480,6 @@ $RECYCLE.BIN/
 
 # Vim temporary swap files
 *.swp
+
+# Personal files (CV etc.): keep out of the public repo
+cv/

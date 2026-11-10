@@ -16,6 +16,9 @@ public class HomeController(IShipmentService shipments) : Controller
         return View(model);
     }
 
+    // GET /Home/Guide → how to use FreightTrack (the written tutorial)
+    public IActionResult Guide() => View();
+
     [ResponseCache(Duration = 0, Location = ResponseCacheLocation.None, NoStore = true)]
     public IActionResult Error()
     {

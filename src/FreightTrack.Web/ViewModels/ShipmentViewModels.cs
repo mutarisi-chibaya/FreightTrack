@@ -62,8 +62,22 @@ public class StatusUpdateFormViewModel
 public class ShipmentDetailsViewModel
 {
     public required Shipment Shipment { get; set; }
-    public required IReadOnlyList<ShipmentStatus> AllowedNextStatuses { get; set; }
     public required DateTime Today { get; set; }
+
+    /// <summary>The progress bar: each normal step and whether it's done, current, skipped or upcoming.</summary>
+    public required IReadOnlyList<JourneyStep> Journey { get; set; }
+
+    /// <summary>The statuses the user may choose next, each with a suggested location and skip warnings.</summary>
+    public required IReadOnlyList<StatusOption> Options { get; set; }
+
+    public ShipmentStatusUpdate? LatestUpdate => Shipment.StatusUpdates.FirstOrDefault(); // history is newest-first
+
+    /// <summary>Places this shipment has already been, offered as autocomplete in the Location box.</summary>
+    public IEnumerable<string> KnownLocations =>
+        new[] { Shipment.Origin, Shipment.Destination }
+            .Concat(Shipment.StatusUpdates.Select(u => u.Location))
+            .Distinct(StringComparer.OrdinalIgnoreCase);
+
     public StatusUpdateFormViewModel NewUpdate { get; set; } = new();
 }
 

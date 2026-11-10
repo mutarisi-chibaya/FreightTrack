@@ -47,3 +47,38 @@ body { background-color: #f6f7f9; }
 .timeline li { position: relative; padding-left: 2rem; padding-bottom: 1.25rem; }
 .timeline li:last-child { padding-bottom: 0; }
 .timeline .dot { position: absolute; left: 0; top: 4px; width: 16px; height: 16px; border-radius: 50%; border: 3px solid #fff; box-shadow: 0 0 0 1px var(--bs-border-color); }
+
+/* Journey progress bar on the shipment page */
+.journey { display: flex; list-style: none; padding: 0; margin: 0; counter-reset: step; }
+.journey-step { flex: 1; position: relative; text-align: center; font-size: .85rem; }
+.journey-step:not(:first-child)::before {               /* the line joining this step to the previous one */
+  content: ""; position: absolute; top: 15px; right: 50%; width: 100%; height: 3px; background: var(--bs-border-color);
+}
+.journey-step.done::before, .journey-step.current::before { background: var(--bs-success); }
+.journey-dot {
+  position: relative; z-index: 1; display: inline-flex; align-items: center; justify-content: center;
+  width: 32px; height: 32px; border-radius: 50%; background: #fff; border: 3px solid var(--bs-border-color);
+  font-weight: 700; color: #fff;
+}
+.journey-label { display: block; margin-top: .35rem; color: var(--bs-secondary-color); line-height: 1.2; }
+.journey-step.done .journey-dot { background: var(--bs-success); border-color: var(--bs-success); }
+.journey-step.done .journey-label { color: var(--bs-body-color); }
+.journey-step.current .journey-dot { background: var(--bs-primary); border-color: var(--bs-primary); box-shadow: 0 0 0 5px rgba(13, 110, 253, .2); }
+.journey-step.current .journey-label { color: var(--bs-primary); font-weight: 600; }
+.journey-step.current.on-hold .journey-dot { background: var(--bs-danger); border-color: var(--bs-danger); box-shadow: 0 0 0 5px rgba(220, 53, 69, .2); }
+.journey-step.current.on-hold .journey-label { color: var(--bs-danger); }
+.journey-step.skipped .journey-dot { border-style: dashed; }
+@media (max-width: 575.98px) { .journey-label { font-size: .7rem; } .journey-dot { width: 26px; height: 26px; } .journey-step:not(:first-child)::before { top: 12px; } }
+
+/* Status choices: make the selected option obvious */
+.btn-check:checked + .btn .badge { background: #fff !important; color: var(--bs-primary) !important; }
+
+/* Guided tour */
+.tour-spotlight {
+  position: fixed; z-index: 1080; border-radius: .5rem; pointer-events: none;
+  box-shadow: 0 0 0 9999px rgba(15, 23, 42, .55); transition: all .25s ease;
+}
+.tour-card { position: fixed; z-index: 1081; }
+.journey-step.skipped::before {   /* the journey passed this step without stopping: dashed green */
+  background: repeating-linear-gradient(90deg, var(--bs-success) 0 6px, transparent 6px 11px);
+}

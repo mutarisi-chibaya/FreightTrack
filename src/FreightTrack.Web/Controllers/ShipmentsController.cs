@@ -97,7 +97,7 @@ public class ShipmentsController(IShipmentService shipments, ICustomerService cu
             {
                 // No login yet, so new shipments are attributed to "Operations".
                 var shipment = await shipments.CreateAsync(form, createdBy: "Operations");
-                TempData["Message"] = $"Shipment {shipment.TrackingNumber} created.";
+                TempData["Message"] = $"Shipment {shipment.TrackingNumber} booked. When the goods are picked up, record \"Collected\" below.";
                 return RedirectToAction(nameof(Details), new { id = shipment.Id });
             }
             catch (BusinessRuleException ex)
@@ -165,11 +165,21 @@ public class ShipmentsController(IShipmentService shipments, ICustomerService cu
         var shipment = await shipments.GetDetailsAsync(id);
         if (shipment is null) return null;
 
+        var options = ShipmentJourney.Options(shipment);
+        var suggested = options.FirstOrDefault(o => o.IsSuggested);
+
         return new ShipmentDetailsViewModel
         {
             Shipment = shipment,
-            AllowedNextStatuses = ShipmentStatusRules.AllowedNextStatuses(shipment.StatusUpdates),
-            Today = shipments.Today
+            Journey = ShipmentJourney.Steps(shipment),
+            Options = options,
+            Today = shipments.Today,
+            // Pre-select the logical next step and its likely location, so the common case is one click.
+            NewUpdate = new StatusUpdateFormViewModel
+            {
+                Status = suggested?.Status,
+                Location = suggested?.SuggestedLocation ?? string.Empty
+            }
         };
     }
 

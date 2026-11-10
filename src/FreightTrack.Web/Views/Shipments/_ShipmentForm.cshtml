@@ -12,14 +12,16 @@
             <div class="form-control-plaintext tracking-number fw-semibold">@Model.TrackingNumber</div>
         </div>
     }
-    <div class="col-md-6">
+    <div class="col-md-6" data-tour-step="1" data-tour-title="Who is it for?"
+         data-tour="Pick the customer. If they're new, add them under Customers first.">
         <label asp-for="CustomerId" class="form-label"></label>
         <select asp-for="CustomerId" asp-items="Model.Customers" class="form-select">
             <option value="">Choose a customer…</option>
         </select>
         <span asp-validation-for="CustomerId" class="text-danger small"></span>
     </div>
-    <div class="col-md-6">
+    <div class="col-md-6" data-tour-step="2" data-tour-title="How is it moving?"
+         data-tour="Air, Sea or Road. Choosing a mode suggests a realistic expected delivery date for you.">
         <label asp-for="Mode" class="form-label"></label>
         <select asp-for="Mode" asp-items="Html.GetEnumSelectList<ShipmentMode>()" class="form-select">
             <option value="">Choose a mode…</option>
@@ -28,12 +30,13 @@
     </div>
     <div class="col-md-6">
         <label asp-for="Origin" class="form-label"></label>
-        <input asp-for="Origin" class="form-control" placeholder="e.g. Durban, South Africa" />
+        <input asp-for="Origin" class="form-control" placeholder="e.g. Durban, South Africa" list="known-places" />
         <span asp-validation-for="Origin" class="text-danger small"></span>
     </div>
     <div class="col-md-6">
         <label asp-for="Destination" class="form-label"></label>
-        <input asp-for="Destination" class="form-control" placeholder="e.g. Gaborone, Botswana" />
+        <input asp-for="Destination" class="form-control" placeholder="e.g. Gaborone, Botswana" list="known-places" />
+        <div class="form-text">Use "City, Country". If the countries differ, the shipment will include a customs step.</div>
         <span asp-validation-for="Destination" class="text-danger small"></span>
     </div>
     <div class="col-md-6">
@@ -51,9 +54,24 @@
         <input asp-for="BookedDate" class="form-control" />
         <span asp-validation-for="BookedDate" class="text-danger small"></span>
     </div>
-    <div class="col-md-6">
+    <div class="col-md-6" data-tour-step="3" data-tour-title="When should it arrive?"
+         data-tour="Suggested from the mode (Air about 5 days, Road about 4, Sea about 30). Change it if the customer agreed something else. It can't be before the booked date.">
         <label asp-for="ExpectedDeliveryDate" class="form-label"></label>
         <input asp-for="ExpectedDeliveryDate" class="form-control" />
+        <div class="form-text" id="expected-hint"></div>
         <span asp-validation-for="ExpectedDeliveryDate" class="text-danger small"></span>
     </div>
 </div>
+
+@* Common places for autocomplete in Origin/Destination. Typing anything else is fine too. *@
+<datalist id="known-places">
+    @foreach (var place in new[] {
+        "Johannesburg, South Africa", "Pretoria, South Africa", "Durban, South Africa", "Cape Town, South Africa",
+        "Gqeberha, South Africa", "Polokwane, South Africa", "Gaborone, Botswana", "Harare, Zimbabwe",
+        "Maputo, Mozambique", "Windhoek, Namibia", "Nairobi, Kenya", "Lagos, Nigeria", "Shanghai, China",
+        "Singapore, Singapore", "Mumbai, India", "Dubai, UAE", "Rotterdam, Netherlands", "Hamburg, Germany",
+        "Frankfurt, Germany", "London, United Kingdom" })
+    {
+        <option value="@place"></option>
+    }
+</datalist>

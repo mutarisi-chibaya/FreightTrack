@@ -48,6 +48,18 @@ public class ValidationTests
     }
 
     [Fact]
+    public async Task Origin_and_destination_must_differ()
+    {
+        using var db = new TestDb();
+        var service = new ShipmentService(db.Context, Clock);
+        var form = Forms.Shipment(db.AddCustomer().Id);
+        form.Destination = " durban, south africa ";
+
+        var ex = await Assert.ThrowsAsync<BusinessRuleException>(() => service.CreateAsync(form, "Test"));
+        Assert.Equal(nameof(form.Destination), ex.Field);
+    }
+
+    [Fact]
     public async Task Shipment_must_belong_to_an_existing_customer()
     {
         using var db = new TestDb();

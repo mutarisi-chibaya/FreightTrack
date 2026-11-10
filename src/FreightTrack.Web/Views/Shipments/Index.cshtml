@@ -7,11 +7,13 @@
 
 <div class="d-flex justify-content-between align-items-center mb-3">
     <h1 class="h3 mb-0">Shipments</h1>
-    <a class="btn btn-primary" asp-action="Create">+ New shipment</a>
+    <a class="btn btn-primary" asp-action="Create" data-tour-step="1" data-tour-title="Book a shipment"
+       data-tour="Start here when a customer books. The tracking number is created for you.">+ New shipment</a>
 </div>
 
 @* GET form: the filters end up in the URL, so a filtered list can be bookmarked or shared. *@
-<form method="get" asp-action="Index" class="card card-body mb-3">
+<form method="get" asp-action="Index" class="card card-body mb-3" data-tour-step="2" data-tour-title="Narrow it down"
+      data-tour="Combine filters, e.g. Sea + In transit + Late only, then press Filter. The filters stay in the address bar, so you can bookmark or share the result.">
     <div class="row g-2 align-items-end">
         <div class="col-sm-6 col-lg-3">
             <label class="form-label small mb-1" for="status">Status</label>
@@ -56,7 +58,8 @@
     </div>
 </form>
 
-<div class="card">
+<div class="card" data-tour-step="3" data-tour-title="The shipment list"
+     data-tour="Newest bookings first. Late shipments show how many days overdue they are. Use Update on a row to record where the goods are now.">
     <div class="table-responsive">
         <table class="table table-hover align-middle mb-0">
             <thead class="table-light">
@@ -67,6 +70,7 @@
                     <th>Mode</th>
                     <th>Status</th>
                     <th>Expected</th>
+                    <th></th>
                 </tr>
             </thead>
             <tbody>
@@ -83,11 +87,18 @@
                             @s.ExpectedDeliveryDate.ToString("yyyy-MM-dd")
                             @if (late) { <span class="badge text-bg-danger ms-1">@s.DaysOverdue(Model.Today)d late</span> }
                         </td>
+                        <td class="text-end">
+                            @if (s.CurrentStatus != ShipmentStatus.Delivered)
+                            {
+                                @* Jumps straight to the update panel on the shipment page. *@
+                                <a class="btn btn-sm btn-outline-primary" asp-action="Details" asp-route-id="@s.Id" asp-fragment="update">Update</a>
+                            }
+                        </td>
                     </tr>
                 }
                 @if (r.TotalCount == 0)
                 {
-                    <tr><td colspan="6" class="text-center text-muted py-4">No shipments match these filters.</td></tr>
+                    <tr><td colspan="7" class="text-center text-muted py-4">No shipments match these filters.</td></tr>
                 }
             </tbody>
         </table>

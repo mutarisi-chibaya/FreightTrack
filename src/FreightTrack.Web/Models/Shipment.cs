@@ -40,4 +40,20 @@ public class Shipment
 
     public int DaysOverdue(DateTime today) =>
         IsLate(today) ? (today.Date - ExpectedDeliveryDate.Date).Days : 0;
+
+    /// <summary>
+    /// True when origin and destination are in different countries (locations are stored as
+    /// "City, Country"). Only cross-border shipments go through customs, so the app leaves the
+    /// "At customs" step out of a domestic shipment's journey.
+    /// [NotMapped] = calculated in C#, not a database column.
+    /// </summary>
+    [System.ComponentModel.DataAnnotations.Schema.NotMapped]
+    public bool CrossesBorder =>
+        !string.Equals(CountryOf(Origin), CountryOf(Destination), StringComparison.OrdinalIgnoreCase);
+
+    public static string CountryOf(string place)
+    {
+        var comma = place.LastIndexOf(',');
+        return (comma >= 0 ? place[(comma + 1)..] : place).Trim();
+    }
 }

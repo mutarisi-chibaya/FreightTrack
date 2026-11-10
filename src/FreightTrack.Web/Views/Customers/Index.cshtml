@@ -5,10 +5,12 @@
 
 <div class="d-flex justify-content-between align-items-center mb-3">
     <h1 class="h3 mb-0">Customers</h1>
-    <a class="btn btn-primary" asp-action="Create">+ New customer</a>
+    <a class="btn btn-primary" asp-action="Create" data-tour-step="3" data-tour-title="Add a customer"
+       data-tour="Add the customer once, then book as many shipments for them as you need.">+ New customer</a>
 </div>
 
-<form method="get" asp-action="Index" class="row g-2 mb-3">
+<form method="get" asp-action="Index" class="row g-2 mb-3" data-tour-step="1" data-tour-title="Find a customer"
+      data-tour="Search by part of the company name or the contact person's name.">
     <div class="col-sm-8 col-md-6">
         <input type="search" name="search" value="@Model.Search" class="form-control"
                placeholder="Search by company or contact name" />
@@ -22,7 +24,8 @@
     </div>
 </form>
 
-<div class="card">
+<div class="card" data-tour-step="2" data-tour-title="Customer list"
+     data-tour="Click a company to see all its shipments and a summary by status.">
     <div class="table-responsive">
         <table class="table table-hover align-middle mb-0">
             <thead class="table-light">

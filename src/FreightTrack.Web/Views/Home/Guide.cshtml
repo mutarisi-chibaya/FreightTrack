@@ -1,0 +1,90 @@
+@{
+    ViewData["Title"] = "Guide";
+
+    // Example journeys for the illustrations below (built here, not from the database).
+    IReadOnlyList<JourneyStep> Example(params JourneyStepState[] states) =>
+        ShipmentJourney.StepsFor(crossesBorder: true).Zip(states, (s, st) => new JourneyStep(s, st)).ToList();
+
+    var inTransit = Example(JourneyStepState.Done, JourneyStepState.Done, JourneyStepState.Current,
+                            JourneyStepState.Upcoming, JourneyStepState.Upcoming, JourneyStepState.Upcoming);
+    var onHold = Example(JourneyStepState.Done, JourneyStepState.Done, JourneyStepState.Done,
+                         JourneyStepState.Current, JourneyStepState.Upcoming, JourneyStepState.Upcoming);
+}
+
+<div class="row justify-content-center">
+<div class="col-lg-9">
+
+<h1 class="h3 mb-1">How to use FreightTrack</h1>
+<p class="text-muted">A five-minute guide for the operations team. Every screen also has a <strong>Tour</strong> button
+    in the top bar that walks you through it.</p>
+
+<div class="d-flex flex-wrap gap-2 mb-4">
+    <a class="btn btn-outline-primary btn-sm" asp-controller="Home" asp-action="Index" asp-route-tour="1">Tour the dashboard</a>
+    <a class="btn btn-outline-primary btn-sm" asp-controller="Shipments" asp-action="Index" asp-route-tour="1">Tour the shipment list</a>
+    <a class="btn btn-outline-primary btn-sm" asp-controller="Shipments" asp-action="Create" asp-route-tour="1">Tour the booking form</a>
+</div>
+
+<div class="card mb-4"><div class="card-body">
+    <h2 class="h5">1. The journey of a shipment</h2>
+    <p>Every shipment moves through the same steps, always <strong>forward</strong>:</p>
+    <partial name="_JourneyBar" model="(inTransit, false)" />
+    <ul class="mt-3 mb-0">
+        <li><strong>Booked:</strong> the customer has booked; a tracking number like <span class="tracking-number">FT-2026-000123</span> is created automatically.</li>
+        <li><strong>Collected:</strong> picked up from the shipper (at the origin).</li>
+        <li><strong>In transit:</strong> moving. Record it again from each new location (a hub, port or border post).</li>
+        <li><strong>At customs:</strong> only for cross-border shipments. Domestic ones skip it automatically.</li>
+        <li><strong>Out for delivery</strong>, then <strong>Delivered</strong>. Delivered closes the shipment.</li>
+    </ul>
+</div></div>
+
+<div class="card mb-4"><div class="card-body">
+    <h2 class="h5">2. Recording where the goods are</h2>
+    <p>Open the shipment (from the list, the dashboard, or by typing its tracking number in the top bar), then use
+        <strong>Record an update</strong>:</p>
+    <ol>
+        <li><strong>What happened?</strong> The logical next step is already selected and marked <em>Next step</em>.
+            If you pick something further ahead, you'll get a warning that steps are being skipped.</li>
+        <li><strong>Where is it now?</strong> Filled in for you: the origin for collection, the destination for customs
+            and delivery. For "in transit" updates, type the hub or border post. Places it has already been are offered as you type.</li>
+        <li><strong>Notes:</strong> optional, except for problems.</li>
+        <li><strong>Your name:</strong> remembered on your computer after the first time.</li>
+    </ol>
+    <p class="mb-0">Tip: on the shipment list, the <strong>Update</strong> button on each row takes you straight to this panel.</p>
+</div></div>
+
+<div class="card mb-4"><div class="card-body">
+    <h2 class="h5">3. When something goes wrong</h2>
+    <p>Choose <strong>Report a problem (Exception)</strong> for damage, customs holds or anything that stops the goods.
+        A note explaining what happened is required. The shipment shows as <span class="text-danger fw-semibold">on hold</span>:</p>
+    <partial name="_JourneyBar" model="(onHold, true)" />
+    <p class="mt-3 mb-0">When it's resolved, record the next normal step and the journey continues from where it stopped.</p>
+</div></div>
+
+<div class="card mb-4"><div class="card-body">
+    <h2 class="h5">4. Everyday tasks</h2>
+    <div class="table-responsive">
+        <table class="table table-sm mb-0">
+            <thead><tr><th>I want to…</th><th>Do this</th></tr></thead>
+            <tbody>
+                <tr><td>Find a shipment a customer is asking about</td><td>Type the tracking number in <strong>Track</strong> (top right).</td></tr>
+                <tr><td>Book a new shipment</td><td><strong>Shipments → + New shipment</strong>, or <strong>+ New shipment</strong> on the customer's page (customer pre-selected).</td></tr>
+                <tr><td>See what's late</td><td>Click the red <strong>Late</strong> card on the dashboard, or tick <strong>Late only</strong> on the shipment list.</td></tr>
+                <tr><td>See everything for one customer</td><td><strong>Customers</strong>, then click the company.</td></tr>
+                <tr><td>Fix a typo in a shipment</td><td>Open it and click <strong>Edit</strong>. The tracking number and status can't be edited; status only changes through updates.</td></tr>
+            </tbody>
+        </table>
+    </div>
+</div></div>
+
+<div class="card mb-4"><div class="card-body">
+    <h2 class="h5">5. Why the rules exist</h2>
+    <ul class="mb-0">
+        <li><strong>No going backwards:</strong> the history is what we show customers and use in disputes, so it must only ever add facts.</li>
+        <li><strong>A note for problems:</strong> the next person to pick up the shipment needs to know what's wrong.</li>
+        <li><strong>Tracking numbers can't be changed:</strong> customers and partners already have them.</li>
+        <li><strong>Late</strong> means not delivered and past the expected delivery date. Due today isn't late yet.</li>
+    </ul>
+</div></div>
+
+</div>
+</div>

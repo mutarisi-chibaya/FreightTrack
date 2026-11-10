@@ -216,6 +216,8 @@ public class ShipmentService(AppDbContext db, TimeProvider time) : IShipmentServ
             throw new BusinessRuleException(nameof(form.Origin), "Origin is required.");
         if (string.IsNullOrWhiteSpace(form.Destination))
             throw new BusinessRuleException(nameof(form.Destination), "Destination is required.");
+        if (string.Equals(form.Origin.Trim(), form.Destination.Trim(), StringComparison.OrdinalIgnoreCase))
+            throw new BusinessRuleException(nameof(form.Destination), "Destination must be different from the origin.");
         if (form.Mode is null)
             throw new BusinessRuleException(nameof(form.Mode), "Choose a transport mode.");
         if (form.WeightKg is null || form.WeightKg <= 0)

@@ -9,7 +9,11 @@
     <link rel="stylesheet" href="~/css/site.css" asp-append-version="true" />
     <link rel="stylesheet" href="~/FreightTrack.Web.styles.css" asp-append-version="true" />
 </head>
-<body>
+@{
+    // Pages opt in: the dashboard tour also explains the navbar, and starts by itself on a first visit.
+    var navTour = ViewData["TourNav"] is true;
+}
+<body data-tour-autostart="@(ViewData["TourAutostart"] is true ? "true" : null)">
     <header>
         <nav class="navbar navbar-expand-md navbar-dark bg-dark mb-4">
             <div class="container">
@@ -19,13 +23,19 @@
                     <span class="navbar-toggler-icon"></span>
                 </button>
                 <div class="collapse navbar-collapse" id="mainNav">
-                    <ul class="navbar-nav me-auto">
+                    <ul class="navbar-nav me-auto" data-tour-step="1" data-tour-title="Find your way around"
+                        data-tour="@(navTour ? "Dashboard shows what needs attention, Shipments is where you book and update goods, and Customers holds who you ship for." : null)">
                         <li class="nav-item"><a class="nav-link" asp-controller="Home" asp-action="Index">Dashboard</a></li>
                         <li class="nav-item"><a class="nav-link" asp-controller="Shipments" asp-action="Index">Shipments</a></li>
                         <li class="nav-item"><a class="nav-link" asp-controller="Customers" asp-action="Index">Customers</a></li>
+                        <li class="nav-item"><a class="nav-link" asp-controller="Home" asp-action="Guide">Guide</a></li>
                     </ul>
                     @* Tracking lookup: a plain GET form, so the URL is shareable: /Shipments/Track?trackingNumber=... *@
-                    <form class="d-flex" role="search" asp-controller="Shipments" asp-action="Track" method="get">
+                    <button type="button" class="btn btn-sm btn-outline-light me-md-3 my-2 my-md-0" data-tour-start
+                            data-tour-step="99" data-tour-title="Need a reminder?"
+                            data-tour="@(navTour ? "Press Tour on any page for a walkthrough of that screen, or open the Guide for the full how-to." : null)">Tour</button>
+                    <form class="d-flex" role="search" data-tour-step="2" data-tour-title="Track a shipment"
+                          data-tour="@(navTour ? "Customer on the phone? Type or paste their tracking number here to jump straight to the shipment. Upper or lower case both work." : null)" asp-controller="Shipments" asp-action="Track" method="get">
                         <input class="form-control form-control-sm me-2" type="search" name="trackingNumber"
                                placeholder="FT-2026-000123" aria-label="Tracking number" required />
                         <button class="btn btn-sm btn-outline-light text-nowrap" type="submit">Track</button>
@@ -63,6 +73,7 @@
     <script src="~/lib/jquery/dist/jquery.min.js"></script>
     <script src="~/lib/bootstrap/dist/js/bootstrap.bundle.min.js"></script>
     <script src="~/js/site.js" asp-append-version="true"></script>
+    <script src="~/js/tour.js" asp-append-version="true"></script>
     @await RenderSectionAsync("Scripts", required: false)
 </body>
 </html>

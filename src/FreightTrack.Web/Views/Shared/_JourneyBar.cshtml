@@ -1,0 +1,21 @@
+@* Horizontal progress bar of a shipment's journey. Used on the shipment page and in the Guide. *@
+@model (IReadOnlyList<JourneyStep> Steps, bool OnHold)
+
+<ol class="journey" aria-label="Shipment progress">
+    @foreach (var step in Model.Steps)
+    {
+        var state = step.State.ToString().ToLowerInvariant();
+        var hold = Model.OnHold && step.State == JourneyStepState.Current ? " on-hold" : "";
+        <li class="journey-step @state@hold" aria-current="@(step.State == JourneyStepState.Current ? "step" : null)">
+            <span class="journey-dot">
+                @if (step.State == JourneyStepState.Done) { <text>&#10003;</text> }
+                else if (hold != "") { <text>!</text> }
+            </span>
+            <span class="journey-label">
+                @step.Status.GetDisplayName()
+                @if (step.State == JourneyStepState.Skipped) { <small class="d-block text-muted">skipped</small> }
+                @if (hold != "") { <small class="d-block text-danger fw-semibold">on hold</small> }
+            </span>
+        </li>
+    }
+</ol>

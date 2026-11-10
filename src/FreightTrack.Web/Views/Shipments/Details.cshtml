@@ -3,32 +3,134 @@
     var s = Model.Shipment;
     ViewData["Title"] = s.TrackingNumber;
     var late = s.IsLate(Model.Today);
-    var statusOptions = Model.AllowedNextStatuses
-        .Select(x => new SelectListItem(x.GetDisplayName(), x.ToString()));
+    var latest = Model.LatestUpdate;
+    var onHold = s.CurrentStatus == ShipmentStatus.Exception;
 }
 
 <div class="d-flex flex-wrap justify-content-between align-items-start gap-2 mb-3">
     <div>
         <a asp-action="Index" class="small">&larr; Shipments</a>
         <h1 class="h3 mb-1 tracking-number">@s.TrackingNumber</h1>
-        <div>
-            <partial name="_StatusBadge" model="s.CurrentStatus" />
-            @if (late) { <span class="badge text-bg-danger">Late by @s.DaysOverdue(Model.Today) days</span> }
+        <div class="text-muted">
+            @s.Customer.CompanyName · @s.Origin &rarr; @s.Destination · @s.Mode
         </div>
     </div>
-    <a asp-action="Edit" asp-route-id="@s.Id" class="btn btn-outline-secondary">Edit details</a>
+    <div class="text-end">
+        <partial name="_StatusBadge" model="s.CurrentStatus" />
+        @if (late) { <span class="badge text-bg-danger">Late by @s.DaysOverdue(Model.Today) days</span> }
+    </div>
+</div>
+
+@* 1. WHERE IS IT? The journey bar answers "how far along is this?" at a glance. *@
+<div class="card mb-4" data-tour-step="1" data-tour-title="Where is this shipment?"
+     data-tour="The progress bar shows each step of the journey. Ticks are done, the blue dot is where it is now. Domestic shipments skip customs automatically.">
+    <div class="card-body">
+        <partial name="_JourneyBar" model="(Model.Journey, onHold)" />
+        @if (latest is not null)
+        {
+            <div class="mt-3 d-flex flex-wrap justify-content-between gap-2 small">
+                <span>
+                    @(s.CurrentStatus == ShipmentStatus.Delivered ? "Delivered at" : "Last seen at")
+                    <strong>@latest.Location</strong>
+                </span>
+                <span class="text-muted">Updated @latest.UpdatedAt.ToString("d MMM yyyy, HH:mm") by @latest.UpdatedBy</span>
+            </div>
+        }
+        @if (onHold)
+        {
+            <div class="alert alert-danger mt-3 mb-0 py-2">
+                <strong>On hold:</strong> @latest?.Notes
+                <div class="small">When the problem is resolved, record the next step below to resume the journey.</div>
+            </div>
+        }
+    </div>
 </div>
 
 <div class="row g-4">
     <div class="col-lg-5">
-        <div class="card mb-4">
-            <div class="card-header fw-semibold">Shipment</div>
+        @* 2. WHAT HAPPENED? The update panel. *@
+        <div class="card mb-4" id="update" data-tour-step="2" data-tour-title="Record an update"
+             data-tour="The logical next step is already selected and the location is filled in from the route. Usually you just check it and press the button.">
+            <div class="card-header fw-semibold">Record an update</div>
+            <div class="card-body">
+                @if (Model.Options.Count == 0)
+                {
+                    <p class="text-muted mb-0">This shipment has been delivered, so its history is closed.</p>
+                }
+                else
+                {
+                    <form id="status-form" asp-action="AddStatusUpdate" asp-route-id="@s.Id" asp-fragment="update" method="post">
+                        <div asp-validation-summary="ModelOnly" class="alert alert-danger"></div>
+
+                        <fieldset class="mb-3" data-tour-step="3" data-tour-title="Choose what happened"
+                                  data-tour="Only steps that move forward are offered. You can't send a shipment backwards. Use 'Report a problem' for damage or customs holds.">
+                            <legend class="form-label fs-6 fw-semibold mb-2">1. What happened?</legend>
+                            <div class="d-grid gap-2">
+                                @foreach (var o in Model.Options)
+                                {
+                                    var id = $"status-{o.Status}";
+                                    var style = o.Status switch
+                                    {
+                                        ShipmentStatus.Exception => "btn-outline-danger",
+                                        ShipmentStatus.Delivered => "btn-outline-success",
+                                        _ => "btn-outline-primary"
+                                    };
+                                    <input type="radio" class="btn-check" name="NewUpdate.Status" id="@id" value="@o.Status"
+                                           checked="@(Model.NewUpdate.Status == o.Status)" required autocomplete="off"
+                                           data-location="@o.SuggestedLocation"
+                                           data-label="@o.Label"
+                                           data-skips="@string.Join(", ", o.SkippedSteps.Select(x => x.GetDisplayName()))" />
+                                    <label class="btn @style text-start d-flex justify-content-between align-items-center" for="@id">
+                                        <span>@o.Label</span>
+                                        @if (o.IsSuggested) { <span class="badge rounded-pill text-bg-light border">Next step</span> }
+                                    </label>
+                                }
+                            </div>
+                            <span asp-validation-for="NewUpdate.Status" class="text-danger small"></span>
+                            <div id="skip-warning" class="alert alert-warning py-2 small mt-2 mb-0 d-none" role="status"></div>
+                        </fieldset>
+
+                        <div class="mb-3" data-tour-step="4" data-tour-title="Where is it now?"
+                             data-tour="Filled in for you: the origin for collection, the destination for customs and delivery. Start typing to pick a place this shipment has already been.">
+                            <label asp-for="NewUpdate.Location" class="form-label fw-semibold">2. Where is it now?</label>
+                            <input asp-for="NewUpdate.Location" class="form-control" list="known-locations" placeholder="e.g. Beitbridge Border Post" />
+                            <datalist id="known-locations">
+                                @foreach (var place in Model.KnownLocations) { <option value="@place"></option> }
+                            </datalist>
+                            <span asp-validation-for="NewUpdate.Location" class="text-danger small"></span>
+                        </div>
+
+                        <div class="mb-3">
+                            <label asp-for="NewUpdate.Notes" class="form-label fw-semibold">
+                                3. Notes <span id="notes-required" class="text-danger small d-none">(required for a problem)</span>
+                            </label>
+                            <textarea asp-for="NewUpdate.Notes" class="form-control" rows="2" placeholder="Optional"></textarea>
+                            <span asp-validation-for="NewUpdate.Notes" class="text-danger small"></span>
+                        </div>
+
+                        <div class="mb-3">
+                            <label asp-for="NewUpdate.UpdatedBy" class="form-label fw-semibold">4. Your name</label>
+                            <input asp-for="NewUpdate.UpdatedBy" class="form-control" placeholder="Remembered on this computer" />
+                            <span asp-validation-for="NewUpdate.UpdatedBy" class="text-danger small"></span>
+                        </div>
+
+                        <button type="submit" id="status-submit" class="btn btn-primary w-100">Record update</button>
+                    </form>
+                }
+            </div>
+        </div>
+
+        <div class="card">
+            <div class="card-header d-flex justify-content-between align-items-center">
+                <span class="fw-semibold">Shipment details</span>
+                <a asp-action="Edit" asp-route-id="@s.Id" class="btn btn-sm btn-outline-secondary">Edit</a>
+            </div>
             <div class="card-body">
                 <dl class="row mb-0">
                     <dt class="col-5">Customer</dt>
                     <dd class="col-7"><a asp-controller="Customers" asp-action="Details" asp-route-id="@s.CustomerId">@s.Customer.CompanyName</a></dd>
-                    <dt class="col-5">Origin</dt><dd class="col-7">@s.Origin</dd>
-                    <dt class="col-5">Destination</dt><dd class="col-7">@s.Destination</dd>
+                    <dt class="col-5">Route</dt>
+                    <dd class="col-7">@s.Origin &rarr; @s.Destination <span class="text-muted small">(@(s.CrossesBorder ? "cross-border" : "domestic"))</span></dd>
                     <dt class="col-5">Mode</dt><dd class="col-7">@s.Mode</dd>
                     <dt class="col-5">Weight</dt><dd class="col-7">@s.WeightKg.ToString("N2") kg</dd>
                     <dt class="col-5">Declared value</dt><dd class="col-7">R @s.DeclaredValue.ToString("N2")</dd>
@@ -39,50 +141,12 @@
                 </dl>
             </div>
         </div>
-
-        <div class="card">
-            <div class="card-header fw-semibold">Add status update</div>
-            <div class="card-body">
-                @if (Model.AllowedNextStatuses.Count == 0)
-                {
-                    <p class="text-muted mb-0">This shipment has been delivered. Its history is closed.</p>
-                }
-                else
-                {
-                    <form asp-action="AddStatusUpdate" asp-route-id="@s.Id" method="post">
-                        <div asp-validation-summary="ModelOnly" class="alert alert-danger"></div>
-                        <div class="mb-3">
-                            <label asp-for="NewUpdate.Status" class="form-label"></label>
-                            @* Only statuses the rules allow are offered; the service re-checks on submit anyway. *@
-                            <select asp-for="NewUpdate.Status" asp-items="statusOptions" class="form-select">
-                                <option value="">Choose…</option>
-                            </select>
-                            <span asp-validation-for="NewUpdate.Status" class="text-danger small"></span>
-                        </div>
-                        <div class="mb-3">
-                            <label asp-for="NewUpdate.Location" class="form-label"></label>
-                            <input asp-for="NewUpdate.Location" class="form-control" placeholder="e.g. Beitbridge Border Post" />
-                            <span asp-validation-for="NewUpdate.Location" class="text-danger small"></span>
-                        </div>
-                        <div class="mb-3">
-                            <label asp-for="NewUpdate.Notes" class="form-label">Notes <span class="text-muted small">(required for Exception)</span></label>
-                            <textarea asp-for="NewUpdate.Notes" class="form-control" rows="2"></textarea>
-                            <span asp-validation-for="NewUpdate.Notes" class="text-danger small"></span>
-                        </div>
-                        <div class="mb-3">
-                            <label asp-for="NewUpdate.UpdatedBy" class="form-label"></label>
-                            <input asp-for="NewUpdate.UpdatedBy" class="form-control" placeholder="Your name" />
-                            <span asp-validation-for="NewUpdate.UpdatedBy" class="text-danger small"></span>
-                        </div>
-                        <button type="submit" class="btn btn-primary">Add update</button>
-                    </form>
-                }
-            </div>
-        </div>
     </div>
 
     <div class="col-lg-7">
-        <div class="card">
+        @* 3. WHAT HAPPENED BEFORE? The audit trail, newest first. *@
+        <div class="card" id="history" data-tour-step="5" data-tour-title="Full history"
+             data-tour="Every update is kept, newest first, with who made it and when. Updates are never edited or deleted, so this is a reliable audit trail.">
             <div class="card-header fw-semibold">History</div>
             <div class="card-body">
                 <ul class="timeline">
@@ -112,4 +176,5 @@
 
 @section Scripts {
     <partial name="_ValidationScriptsPartial" />
+    <script src="~/js/status-update.js" asp-append-version="true"></script>
 }

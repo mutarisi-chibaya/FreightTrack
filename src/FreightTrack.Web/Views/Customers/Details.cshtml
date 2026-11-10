@@ -12,7 +12,8 @@
         <div class="text-muted">@c.City, @c.Country · customer since @c.CreatedAt.ToString("MMM yyyy")</div>
     </div>
     <div class="text-nowrap">
-        <a asp-controller="Shipments" asp-action="Create" asp-route-customerId="@c.Id" class="btn btn-primary">+ New shipment</a>
+        <a asp-controller="Shipments" asp-action="Create" asp-route-customerId="@c.Id" class="btn btn-primary"
+           data-tour-step="2" data-tour-title="Book for this customer" data-tour="Opens the booking form with this customer already selected.">+ New shipment</a>
         <a asp-action="Edit" asp-route-id="@c.Id" class="btn btn-outline-secondary">Edit</a>
     </div>
 </div>
@@ -31,7 +32,8 @@
         </div>
     </div>
     <div class="col-md-7">
-        <div class="card h-100">
+        <div class="card h-100" data-tour-step="1" data-tour-title="Shipment summary"
+             data-tour="How many of this customer's shipments are at each stage, with the total weight. This comes from a SQL Server stored procedure.">
             <div class="card-header fw-semibold d-flex justify-content-between">
                 <span>Shipment summary</span>
                 <span class="text-muted small fw-normal">from stored procedure <code>usp_GetCustomerShipmentSummary</code></span>
