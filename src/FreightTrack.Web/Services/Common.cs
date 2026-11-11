@@ -23,7 +23,7 @@ public class PagedResult<T>
     public bool HasNext => Page < TotalPages;
 }
 
-/// <summary>Filters for the shipment list. Bound from the query string, e.g. ?status=InTransit&lateOnly=true&page=2</summary>
+/// <summary>Filters for the shipment list. Bound from the query string, e.g. ?status=InTransit&amp;lateOnly=true&amp;page=2</summary>
 public class ShipmentFilter
 {
     public ShipmentStatus? Status { get; set; }
