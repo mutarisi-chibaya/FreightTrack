@@ -4,14 +4,20 @@
     <TargetFramework>net10.0</TargetFramework>
     <Nullable>enable</Nullable>
     <ImplicitUsings>enable</ImplicitUsings>
+    <!-- Lets the OpenAPI generator read our /// XML comments and show them in Swagger.
+         1591 = "missing XML comment"; we only document the API, so that warning is noise. -->
+    <GenerateDocumentationFile>true</GenerateDocumentationFile>
+    <NoWarn>$(NoWarn);1591</NoWarn>
   </PropertyGroup>
 
   <ItemGroup>
+    <PackageReference Include="Microsoft.AspNetCore.OpenApi" Version="10.0.15" />
     <PackageReference Include="Microsoft.EntityFrameworkCore.Design" Version="10.0.14">
       <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
       <PrivateAssets>all</PrivateAssets>
     </PackageReference>
     <PackageReference Include="Microsoft.EntityFrameworkCore.SqlServer" Version="10.0.14" />
+    <PackageReference Include="Swashbuckle.AspNetCore.SwaggerUI" Version="11.0.0" />
     <!-- Pinned explicitly: the SQL Server driver pulls in an older version with known vulnerabilities
          (NuGet warnings NU1902/NU1903). Referencing the patched version directly overrides it. -->
     <PackageReference Include="System.Security.Cryptography.Pkcs" Version="10.0.14" />

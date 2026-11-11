@@ -1,8 +1,8 @@
-# FreightTrack: Shipment Tracking System
+﻿# FreightTrack: Shipment Tracking System
 
 FreightTrack is an internal web app for a freight company's operations team. Staff record customers and their
-shipments, move each shipment through its journey (booked → collected → in transit → at customs → out for
-delivery → delivered), and look up any shipment by tracking number. Managers get a dashboard of what's in
+shipments, move each shipment through its journey (booked â†’ collected â†’ in transit â†’ at customs â†’ out for
+delivery â†’ delivered), and look up any shipment by tracking number. Managers get a dashboard of what's in
 progress and what's late. Business rules (forward-only status changes, a required note for exceptions,
 auto-generated tracking numbers, input validation) live in a service layer and are covered by unit tests.
 
@@ -25,7 +25,7 @@ auto-generated tracking numbers, input validation) live in a service layer and a
 (Express or LocalDB).
 
 ```powershell
-git clone https://github.com/<your-username>/FreightTrack.git
+git clone https://github.com/mutarisi-chibaya/FreightTrack.git
 cd FreightTrack
 
 # 1. Point the app at your SQL Server, in src/FreightTrack.Web/appsettings.json:
@@ -67,9 +67,9 @@ dotnet test
 ## Architecture
 
 ```
-Browser ──► Controller ──► Service (business rules) ──► AppDbContext (EF Core) ──► SQL Server
-              │                                                     └── SqlQuery ──► stored procedure
-              └──► View model ──► Razor view
+Browser â”€â”€â–º Controller â”€â”€â–º Service (business rules) â”€â”€â–º AppDbContext (EF Core) â”€â”€â–º SQL Server
+              â”‚                                                     â””â”€â”€ SqlQuery â”€â”€â–º stored procedure
+              â””â”€â”€â–º View model â”€â”€â–º Razor view
 ```
 
 - **Controllers** only deal with HTTP: bind input, call a service, pick a view, and redirect after a POST.

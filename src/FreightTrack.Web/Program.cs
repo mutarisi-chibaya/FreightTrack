@@ -1,6 +1,7 @@
 using FreightTrack.Web.Data;
 using FreightTrack.Web.Services;
 using Microsoft.EntityFrameworkCore;
+using System.Text.Json.Serialization;
 
 // Program.cs is the entry point of the app (like `public static void main` in Java).
 // C# "top-level statements" let us skip writing the Program class and Main method by hand.
@@ -13,7 +14,18 @@ var builder = WebApplication.CreateBuilder(args);
 // 2) REGISTER SERVICES IN THE DI CONTAINER
 // Anything registered here can be "asked for" in a constructor, and ASP.NET Core supplies it.
 // AddControllersWithViews() registers everything MVC needs: controllers, Razor views, model binding, validation.
-builder.Services.AddControllersWithViews();
+// AddJsonOptions affects the REST API: enums are sent as names ("InTransit") instead of numbers (2),
+// so the JSON is readable and doesn't break if the enum's numbers ever change.
+builder.Services.AddControllersWithViews()
+    .AddJsonOptions(o => o.JsonSerializerOptions.Converters.Add(new JsonStringEnumConverter()));
+
+// OpenAPI: generates a machine-readable description of the REST API at /openapi/v1.json
+// (endpoints, parameters, DTO shapes, status codes). Swagger UI below turns it into a test page.
+builder.Services.AddOpenApi();
+// The OpenAPI generator reads this separate JSON setting (not the MVC one above), so we set the same
+// enum converter here too. Without it, the docs would show "mode": 0 while the API returns "Road".
+builder.Services.ConfigureHttpJsonOptions(o =>
+    o.SerializerOptions.Converters.Add(new JsonStringEnumConverter()));
 
 // EF Core DbContext, using the connection string from appsettings.json. Registered as "scoped":
 // one instance per HTTP request, so each request gets its own unit of work.
@@ -38,6 +50,15 @@ if (app.Environment.IsDevelopment())
     var db = scope.ServiceProvider.GetRequiredService<AppDbContext>();
     db.Database.Migrate();
     SeedData.Initialize(db, TimeProvider.System);
+
+    // API docs, development only: the JSON spec at /openapi/v1.json and an interactive page at
+    // /swagger where you can call each endpoint from the browser.
+    app.MapOpenApi();
+    app.UseSwaggerUI(o =>
+    {
+        o.SwaggerEndpoint("/openapi/v1.json", "FreightTrack API v1");
+        o.DocumentTitle = "FreightTrack API";
+    });
 }
 
 // 3) CONFIGURE THE MIDDLEWARE PIPELINE
